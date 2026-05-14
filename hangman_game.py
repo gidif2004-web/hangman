@@ -38,36 +38,49 @@ def print_corrent_situation(tries_counter, hidden_word_list):
     print(f'you heve {MAX_TRIES - tries_counter} gueses left')
     print(f'corrent state of word: {' '.join(hidden_word_list)}')
     
+def get_valid_input():
+    is_input_valid = False
+    while not is_input_valid:
+        guess = input('enter your guess\n')
+        if guess.isalpha() and  len(guess) == 1:
+            is_input_valid = True
+        else:
+            print('illegal input, input must be one letter!')
+    return guess
+
+def check_if_guess_already_made(guess, previous_guesses):
+    if guess in previous_guesses:
+        print('guess made already')
+        return True
+    return False
 
 def get_user_guess(previous_guesses):
-    is_input_valid = False
-    is_guess_made_before = False
-    while not is_input_valid or is_guess_made_before:
-        guess = input('enter your guess\n')
-        if  not guess.isalpha() or  len(guess) != 1:
-            print('illegal input, input must be one letter!')
-            is_input_valid = False
-        else:
-            is_input_valid = True
-            if guess in previous_guesses:
-                print('guess made already')
-        is_guess_made_before = guess in previous_guesses
+    is_guess_made_before = True
+    while is_guess_made_before:
+        guess = get_valid_input()
+        is_guess_made_before = check_if_guess_already_made(guess, previous_guesses)
     return guess
 
 def update_hidden_word_list(guess, the_wining_word, hidden_word_list):
-    sum_of_erased_indexes = 0
-    while guess in the_wining_word:
-        letter_index = the_wining_word.index(guess)
-        hidden_word_list[letter_index + sum_of_erased_indexes] = guess
-        the_wining_word = the_wining_word[letter_index + 1:]
-        sum_of_erased_indexes += letter_index + 1
+    for index, letter in enumerate(the_wining_word):
+        if letter == guess:
+            hidden_word_list[index] = guess
     return hidden_word_list
+
+
+def end_game_message(tries_counter, the_wining_word, hidden_word_list):
+    print_corrent_situation(tries_counter, hidden_word_list)
+    is_won = tries_counter < MAX_TRIES
+    if is_won:
+        print('Congratulations you won')
+    else:
+        print(f'unfortunately you lost\nthe word was {the_wining_word}')
 
 def start_game(the_wining_word, hidden_word_list, is_word_reveald, tries_counter, previous_guesses):
     while tries_counter < MAX_TRIES and not is_word_reveald:
         print_corrent_situation(tries_counter, hidden_word_list)
         guess = get_user_guess(previous_guesses)
-        previous_guesses.append(guess)
+        previous_guesses.add(guess)
         is_guess_correct = guess in the_wining_word
         if is_guess_correct:
             print ('correct guess')
@@ -76,11 +89,8 @@ def start_game(the_wining_word, hidden_word_list, is_word_reveald, tries_counter
         else:
             print('wrong guess')
             tries_counter += 1
-    is_won = tries_counter < 5
-    if is_won:
-        print('Congratulations you won')
-    else:
-        print('unfortunately you lost')
+    end_game_message(tries_counter, the_wining_word, hidden_word_list)
+    
 
 
 def initial_game():
@@ -88,7 +98,7 @@ def initial_game():
     hidden_word_list = make_hidden_word_list(len(the_wining_word))
     is_word_reveald = False
     tries_counter = 0
-    previous_guesses = []
+    previous_guesses = set()
     print_opening_screen()
     start_game(the_wining_word, hidden_word_list, is_word_reveald, tries_counter, previous_guesses)
 
